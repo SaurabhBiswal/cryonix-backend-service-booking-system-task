@@ -2,7 +2,7 @@
 
 A robust, production-ready backend service booking system built for scalability and high concurrency. This project was developed as a technical assessment for the **Backend Intern** role at **Cryonix LLC**.
 
-## 🚀 Overview
+##  Overview
 
 This system provides a complete backend for managing service appointments. It handles user authentication (RBAC), provider slot management, and a secure booking flow with integrated payment simulation.
 
@@ -11,7 +11,7 @@ This system provides a complete backend for managing service appointments. It ha
 - **Concurrency Mastered**: Uses Database-level Row Locking (`SELECT FOR UPDATE`) to prevent 100% of double-booking edge cases.
 - **Developer Friendly**: Includes an **Automated Test Script** to verify the entire flow in seconds without needing Postman.
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 - **Runtime**: Node.js
 - **Framework**: Express.js with TypeScript
@@ -20,7 +20,7 @@ This system provides a complete backend for managing service appointments. It ha
 - **Security**: JWT (Authentication), Bcrypt (Password Hashing), Role-Based Access Control (RBAC)
 - **Validation**: Zod (Schema validation for all inputs)
 
-## ✨ Core Features
+##  Core Features
 
 ### 1. Robust Authentication
 - **Secure Sign-up/Login**: Passwords are hashed using Bcrypt (12 salt rounds).
@@ -39,7 +39,7 @@ This system provides a complete backend for managing service appointments. It ha
 - Simulates a typical webhook flow: `Booking (PENDING)` -> `Confirm Payment` -> `Booking (CONFIRMED)`.
 - **Failure Recovery Log**: Implemented a mock reconciliation log to handle cases where the database might fail *after* a successful third-party payment.
 
-## 🚦 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Node.js (v18 or higher recommended)
@@ -70,7 +70,7 @@ This system provides a complete backend for managing service appointments. It ha
    npm run dev
    ```
 
-## 🧪 Automated Testing (The "Wow" Factor)
+##  Automated Testing (The "Wow" Factor)
 
 You don't need to manually test with Postman. I've built a custom automation script that simulates a full business cycle:
 
@@ -87,7 +87,7 @@ You don't need to manually test with Postman. I've built a custom automation scr
    - Confirms Payment.
    - **Verifies Protection**: Tries to book the same slot again and confirms the server rejects it with a `409 Conflict`.
 
-## 📁 Project Structure
+##  Project Structure
 
 ```text
 src/
@@ -101,10 +101,10 @@ prisma/
 └── schema.prisma   # Database Models & Constraints
 ```
 
-## 📝 Documentations Included
+##  Documentations Included
 - `walkthrough.md`: Detailed setup and technical decisions.
 - `video_script.md`: A 5-minute Loom video script for the presentation.
 - `test-api.js`: Automated verification script.
 
 ---
-**Made with ❤️ for the Cryonix Team.**
+**Made with ❤️ for the Cryonix Team by SAURABH BISWAL.**
