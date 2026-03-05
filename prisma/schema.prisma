@@ -1,0 +1,71 @@
+// Generator tells Prisma to generate the TypeScript client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// In Prisma v7, datasource url is configured via prisma.config.ts
+// The datasource block only declares the provider
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  PROVIDER
+  CUSTOMER
+}
+
+enum SlotStatus {
+  AVAILABLE
+  BOOKED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  slots    Slot[]    @relation("ProviderSlots")
+  bookings Booking[] @relation("CustomerBookings")
+
+  @@map("users")
+}
+
+model Slot {
+  id         String     @id @default(uuid())
+  providerId String
+  startTime  DateTime
+  endTime    DateTime
+  status     SlotStatus @default(AVAILABLE)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  provider User      @relation("ProviderSlots", fields: [providerId], references: [id], onDelete: Cascade)
+  booking  Booking?
+
+  @@map("slots")
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  customerId    String
+  slotId        String        @unique
+  paymentStatus PaymentStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  customer User @relation("CustomerBookings", fields: [customerId], references: [id], onDelete: Cascade)
+  slot     Slot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+
+  @@map("bookings")
+}
