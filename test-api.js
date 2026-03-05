@@ -1,13 +1,16 @@
-const http = require('http');
+const USE_PRODUCTION = process.argv.includes('--prod');
+const HOST = USE_PRODUCTION ? 'cryonix-booking.onrender.com' : 'localhost';
+const PORT = USE_PRODUCTION ? 443 : 3000;
+const PROTOCOL = USE_PRODUCTION ? require('https') : require('http');
 
-const BASE_URL = 'http://localhost:3000/api';
+console.log(`🌐 Target: ${USE_PRODUCTION ? 'Production (Render)' : 'Localhost'}`);
 
 // Helper for making requests
 const request = (method, endpoint, body = null, token = null) => {
     return new Promise((resolve, reject) => {
         const options = {
-            hostname: 'localhost',
-            port: 3000,
+            hostname: HOST,
+            port: PORT,
             path: `${endpoint}`,
             method: method,
             headers: {
