@@ -22,7 +22,7 @@ const request = (method, endpoint, body = null, token = null) => {
             options.headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const req = http.request(options, (res) => {
+        const req = PROTOCOL.request(options, (res) => {
             let data = '';
             res.on('data', (chunk) => data += chunk);
             res.on('end', () => {

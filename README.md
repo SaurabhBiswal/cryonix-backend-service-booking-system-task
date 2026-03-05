@@ -6,6 +6,8 @@ A robust, production-ready backend service booking system built for scalability 
 
 This system provides a complete backend for managing service appointments. It handles user authentication (RBAC), provider slot management, and a secure booking flow with integrated payment simulation.
 
+**Live Demo**: [https://cryonix-booking.onrender.com](https://cryonix-booking.onrender.com)
+
 ### Key Highlights:
 - **Zero Local Setup**: Integrated with **Neon Cloud PostgreSQL**, making it ready for immediate testing.
 - **Concurrency Mastered**: Uses Database-level Row Locking (`SELECT FOR UPDATE`) to prevent 100% of double-booking edge cases.
