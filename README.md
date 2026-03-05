@@ -1,247 +1,110 @@
-# Cryonix Service Booking Backend
+# Cryonix Service Booking Backend System
 
-A production-ready RESTful backend for a service booking platform, built with **Node.js**, **TypeScript**, **Express**, **Prisma ORM**, and **PostgreSQL**.
+A robust, production-ready backend service booking system built for scalability and high concurrency. This project was developed as a technical assessment for the **Backend Intern** role at **Cryonix LLC**.
+
+## 🚀 Overview
+
+This system provides a complete backend for managing service appointments. It handles user authentication (RBAC), provider slot management, and a secure booking flow with integrated payment simulation.
+
+### Key Highlights:
+- **Zero Local Setup**: Integrated with **Neon Cloud PostgreSQL**, making it ready for immediate testing.
+- **Concurrency Mastered**: Uses Database-level Row Locking (`SELECT FOR UPDATE`) to prevent 100% of double-booking edge cases.
+- **Developer Friendly**: Includes an **Automated Test Script** to verify the entire flow in seconds without needing Postman.
+
+## 🛠️ Tech Stack
+
+- **Runtime**: Node.js
+- **Framework**: Express.js with TypeScript
+- **Database**: PostgreSQL (hosted on Neon.tech)
+- **ORM**: Prisma v7 (Cloud-ready with Driver Adapters)
+- **Security**: JWT (Authentication), Bcrypt (Password Hashing), Role-Based Access Control (RBAC)
+- **Validation**: Zod (Schema validation for all inputs)
+
+## ✨ Core Features
+
+### 1. Robust Authentication
+- **Secure Sign-up/Login**: Passwords are hashed using Bcrypt (12 salt rounds).
+- **RBAC**: Three distinct roles — `ADMIN`, `PROVIDER`, and `CUSTOMER`.
+- **JWT Authorization**: All private routes are protected via a robust middleware layer.
+
+### 2. Provider Slot Management
+- Providers can create, view, and delete time slots.
+- **Overlap Protection**: Smart validation prevents providers from creating overlapping slots.
+
+### 3. High-Concurrency Booking Flow
+- **Atomic Transactions**: Bookings are handled inside Prisma transactions.
+- **Row-Level Locking**: When a booking request comes in, the specific slot is locked at the database level to ensure no two customers can book the same slot simultaneously, even if requests arrive at the exact same millisecond.
+
+### 4. Resilient Payment Simulation
+- Simulates a typical webhook flow: `Booking (PENDING)` -> `Confirm Payment` -> `Booking (CONFIRMED)`.
+- **Failure Recovery Log**: Implemented a mock reconciliation log to handle cases where the database might fail *after* a successful third-party payment.
+
+## 🚦 Getting Started
+
+### Prerequisites
+- Node.js (v18 or higher recommended)
+- npm or yarn
+
+### Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/SaurabhBiswal/cryonix-backend-service-booking-system-task.git
+   cd cryonix-backend-service-booking-system-task
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Environment Setup**:
+   The project is already pre-configured with a Neon Cloud DB for your convenience. If you wish to use your own, update the `.env` file:
+   ```env
+   DATABASE_URL="your_postgres_url"
+   JWT_SECRET="your_secret"
+   ```
+
+4. **Start the server**:
+   ```bash
+   npm run dev
+   ```
+
+## 🧪 Automated Testing (The "Wow" Factor)
+
+You don't need to manually test with Postman. I've built a custom automation script that simulates a full business cycle:
+
+1. **Start the server** in one terminal (`npm run dev`).
+2. **Run the test script** in another terminal:
+   ```bash
+   node test-api.js
+   ```
+   **What it does:**
+   - Logs in as a Provider.
+   - Logs in as a Customer.
+   - Creates a unique Slot.
+   - Books the Slot.
+   - Confirms Payment.
+   - **Verifies Protection**: Tries to book the same slot again and confirms the server rejects it with a `409 Conflict`.
+
+## 📁 Project Structure
+
+```text
+src/
+├── config/         # Prisma & DB adapters
+├── controllers/    # API logic (Auth, Booking, Slots)
+├── middlewares/    # Auth & Error Handlers
+├── routes/         # Endpoint definitions
+├── types/          # TypeScript definitions
+└── utils/          # Handlers (JWT, Errors, Passwords)
+prisma/
+└── schema.prisma   # Database Models & Constraints
+```
+
+## 📝 Documentations Included
+- `walkthrough.md`: Detailed setup and technical decisions.
+- `video_script.md`: A 5-minute Loom video script for the presentation.
+- `test-api.js`: Automated verification script.
 
 ---
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js v18+ |
-| Language | TypeScript |
-| Framework | Express.js |
-| ORM | Prisma |
-| Database | PostgreSQL |
-| Auth | JWT (jsonwebtoken) |
-| Validation | Zod |
-| Password Hashing | bcryptjs |
-
----
-
-## Setup Instructions
-
-### 1. Prerequisites
-- Node.js v18+
-- PostgreSQL running locally (or a hosted instance like Neon.tech / Supabase)
-
-### 2. Clone & Install
-
-```bash
-git clone <your-repo-url>
-cd cryonix-service-booking-backend
-npm install
-```
-
-### 3. Configure Environment
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` with your database URL and JWT secret:
-
-```env
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
-JWT_SECRET="your-super-secret-jwt-key-min-32-chars"
-JWT_EXPIRES_IN="7d"
-PORT=3000
-NODE_ENV="development"
-```
-
-### 4. Run Database Migrations
-
-```bash
-npx prisma migrate dev --name init
-```
-
-### 5. Seed the Database (Optional)
-
-```bash
-npm run seed
-```
-
-This creates test users:
-| Role | Email | Password |
-|---|---|---|
-| Admin | admin@cryonix.com | Admin@1234 |
-| Provider | provider@cryonix.com | Provider@1234 |
-| Customer | customer@cryonix.com | Customer@1234 |
-
-### 6. Start the Server
-
-```bash
-# Development (with hot reload)
-npm run dev
-
-# Production
-npm run build && npm start
-```
-
-Server runs at: `http://localhost:3000`
-
----
-
-## API Endpoints
-
-### Authentication
-
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| POST | `/auth/register` | Public | Register a new user |
-| POST | `/auth/login` | Public | Login and get JWT token |
-| GET | `/auth/profile` | Any authenticated | Get own profile |
-
-**Register Body:**
-```json
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "Secret@123",
-  "role": "CUSTOMER"
-}
-```
-
-**Login Body:**
-```json
-{
-  "email": "john@example.com",
-  "password": "Secret@123"
-}
-```
-
-**Headers for protected routes:**
-```
-Authorization: Bearer <jwt_token>
-```
-
----
-
-### Slot Management
-
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| POST | `/slots` | PROVIDER, ADMIN | Create a new available slot |
-| GET | `/slots` | Authenticated | List all slots (filter by `?status=AVAILABLE`) |
-| GET | `/slots/my` | PROVIDER, ADMIN | Get own slots |
-| DELETE | `/slots/:id` | PROVIDER, ADMIN | Delete an available slot |
-
-**Create Slot Body:**
-```json
-{
-  "startTime": "2026-03-10T10:00:00.000Z",
-  "endTime": "2026-03-10T11:00:00.000Z"
-}
-```
-
----
-
-### Booking
-
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| POST | `/bookings` | CUSTOMER, ADMIN | Book an available slot |
-| POST | `/bookings/confirm-payment` | Authenticated | Confirm payment for a booking |
-| GET | `/bookings/my` | CUSTOMER, ADMIN | Get own bookings |
-| GET | `/bookings` | ADMIN | Get all bookings |
-
-**Create Booking Body:**
-```json
-{
-  "slotId": "uuid-of-the-slot"
-}
-```
-
-**Confirm Payment Body:**
-```json
-{
-  "bookingId": "uuid-of-the-booking",
-  "simulateDbFailure": false
-}
-```
-
-> Set `simulateDbFailure: true` to test the payment-success-but-DB-failure scenario.
-
----
-
-### Admin
-
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| GET | `/admin/users` | ADMIN | List all users |
-| DELETE | `/admin/users/:id` | ADMIN | Delete a user |
-| GET | `/admin/stats` | ADMIN | Platform statistics |
-
----
-
-## Design Decisions
-
-### 1. Role-Based Access Control (RBAC)
-
-Three roles are supported: `ADMIN`, `PROVIDER`, `CUSTOMER`. JWT tokens carry the role, and the `authorize()` middleware checks it on every protected route.
-
-### 2. Double Booking Prevention
-
-Double booking is prevented using **database-level row locking** via PostgreSQL's `SELECT FOR UPDATE`:
-
-```sql
-SELECT id, status FROM slots WHERE id = $slotId FOR UPDATE;
-```
-
-This runs inside a **Prisma interactive transaction**. The row lock ensures that even if two requests arrive simultaneously for the same slot, only one can proceed — the second will wait and then see the slot as `BOOKED`.
-
-This approach is more reliable than application-level checks (which can have TOCTOU race conditions) because the lock is enforced at the database engine level.
-
-### 3. Payment Confirmation Logic
-
-Booking follows a two-step process:
-1. **`POST /bookings`** — Creates the booking with `paymentStatus: PENDING`. Slot is locked but not yet finalized.
-2. **`POST /bookings/confirm-payment`** — Simulates payment; on success, sets `paymentStatus: COMPLETED`.
-
-**Handling payment success + DB failure:**
-
-When `simulateDbFailure: true` is passed, we simulate a scenario where the payment gateway returns success but the subsequent DB update crashes. The system:
-- Logs a `[RECONCILIATION NEEDED]` error with the transaction ID
-- Returns HTTP `500` with the `paymentTransactionId` and `RECONCILIATION_REQUIRED` action
-- In production, this event would trigger a monitoring alert and a background reconciliation job (e.g., an SQS queue consumer) that would retry the DB update using the payment gateway's idempotency key
-
-### 4. Error Handling
-
-Global error handling middleware (`errorHandler.ts`) catches all errors and returns structured JSON responses with appropriate HTTP status codes. Zod validation errors return `400 Bad Request` with human-readable messages.
-
----
-
-## Database Schema
-
-```
-users
-  id (uuid, PK)
-  name, email (UNIQUE), password, role (ADMIN|PROVIDER|CUSTOMER)
-  createdAt, updatedAt
-
-slots
-  id (uuid, PK)
-  providerId (FK → users.id)
-  startTime, endTime (DATETIME)
-  status (AVAILABLE|BOOKED)
-  createdAt, updatedAt
-
-bookings
-  id (uuid, PK)
-  customerId (FK → users.id)
-  slotId (FK → slots.id, UNIQUE — one booking per slot)
-  paymentStatus (PENDING|COMPLETED|FAILED)
-  createdAt, updatedAt
-```
-
-The `slotId` on `bookings` is `UNIQUE`, which provides an additional database-level constraint against double booking.
-
----
-
-## Security Highlights
-
-- Passwords hashed with **bcrypt** (12 salt rounds)
-- JWTs signed with **HS256**, expire in 7 days
-- Role-checked on every sensitive route
-- Input validated with **Zod** schemas before hitting the database
-- Sensitive fields (password) never returned in API responses
+**Made with ❤️ for the Cryonix Team.**
